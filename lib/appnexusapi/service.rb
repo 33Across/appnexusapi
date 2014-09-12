@@ -7,7 +7,7 @@ class AppnexusApi::Service
   def name
     @name ||= begin
       str = self.class.name.split("::").last.gsub("Service", "")
-      str.gsub(/(.)([A-Z])/, '\1_\2').downcase
+      str.gsub(/(.)([A-Z])/, '\1-\2').downcase
     end
   end
 
@@ -17,19 +17,19 @@ class AppnexusApi::Service
 
   def resource_class
     @resource_class ||= begin
-      resource_name = name.capitalize.gsub(/(_(.))/) { |c| $2.upcase }
+      resource_name = name.capitalize.gsub(/(-(.))/) { |c| $2.upcase }
       AppnexusApi.const_get(resource_name + "Resource")
     end
   end
-  
+
   def uri_name
     name.gsub('_', '-')
   end
-  
+
   def plural_uri_name
     uri_name + 's'
   end
-  
+
   def uri_suffix
     uri_name
   end
