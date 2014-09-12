@@ -23,34 +23,48 @@ Establish a connection:
     connection = AppnexusApi::Connection.new({
       # optionally pass a uri for the staging site
       # defaults to "http://api.adnxs.com/"
-      # uri => "http://api.sand-08.adnxs.net",
+      # "uri" => "http://api.sand-08.adnxs.net",
+
+      # print the request & response out to STDERR
+      # "debug_log" => true,
+
       "username" => 'username',
       "password" => 'password'
     })
 
 Use a Service:
 
-    member_service = AppnexusApi::MemberService.new(connection)
+    line_item_service = AppnexusApi::LineItemService.new(connection)
     # get always returns an array of results
     # and defaults "num_elements" to 100 and "start_element" to 0
     # and returns an AppnexusApi::Resource object which is a wrapper around the JSON
-    member = member_service.get.first
+    line_item = line_item_service.get.first
+    line_item = line_item_service.get({advertiser_id: 12345}).first
 
-    creative_service = AppnexusApi::CreativeService.new(connection, member.id)
+    # create a new object
+    url_params  = { advertiser_id: 12345 }
+    body_params = { name: "some line item", code: "line item code"}
 
-    new_creative = {
-      "media_url" => "http://ad.doubleclick.net/adi/ABC.Advertising.com/DEF.40;sz=300x250;click0=",
-      "width" => "300",
-      "height" => "250",
-      "format" => "url-html"
-    }
-    creative = creative_service.create(new_creative)
-    creative.update("campaign" => "Testing")
+    line_item = line_item_service.create(url_params, body_params)
+    line_item.state
+
+
+    # update an object
+    update_params = { state: "inactive" }
+    json_result = line_item.update(url_params, update_params)
+
+    # delete an object
+    line_item.delete(url_params)
+
+    # this raises an AppnexusApi::UnprocessableEntity, not a 404 as it should
+    line_item_service.get(line_item.id)
+
 
 ## Contributing
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Make changes (with tests -- at least integration tests, please)
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
