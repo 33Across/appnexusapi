@@ -40,6 +40,10 @@ class AppnexusApi::Connection
     run_request(:get, @connection.build_url(route, params), nil, headers).body
   end
 
+  def build_url(route, params)
+    @connection.build_url(route, params)
+  end
+
   def post(route, body=nil, headers={})
     run_request(:post, route, body, headers).body
   end
