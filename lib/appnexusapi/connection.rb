@@ -1,16 +1,24 @@
 require 'appnexusapi/faraday/encode_json'
 require 'appnexusapi/faraday/parse_json'
 require 'appnexusapi/faraday/raise_http_error'
+require 'appnexusapi/faraday/logger'
 
 class AppnexusApi::Connection
   def initialize(config)
     config["uri"] = "http://api.adnxs.com/" unless config.has_key?("uri")
+    debug_log = config.delete("debug_log")
     @config = config
-    @connection = Faraday::Connection.new(:url => config["uri"]) do |builder|
-      builder.use AppnexusApi::Faraday::Request::JsonEncode
-      builder.use AppnexusApi::Faraday::Response::RaiseHttpError
-      builder.use AppnexusApi::Faraday::Response::ParseJson
-      builder.adapter Faraday.default_adapter
+    @connection = Faraday::Connection.new(:url => config["uri"]) do |faraday|
+      faraday.use AppnexusApi::Faraday::Request::JsonEncode
+      faraday.use AppnexusApi::Faraday::Response::RaiseHttpError
+      faraday.use AppnexusApi::Faraday::Response::ParseJson
+
+      if debug_log
+        faraday.use AppnexusApi::Faraday::Request::Logger
+        # faraday.use Faraday::Response::Logger
+      end
+
+      faraday.adapter Faraday.default_adapter
     end
   end
 
