@@ -2,6 +2,7 @@ require 'appnexusapi/faraday/encode_json'
 require 'appnexusapi/faraday/parse_json'
 require 'appnexusapi/faraday/raise_http_error'
 require 'appnexusapi/faraday/logger'
+require "faraday_middleware"
 
 class AppnexusApi::Connection
   def initialize(config)
@@ -9,7 +10,7 @@ class AppnexusApi::Connection
     debug_log = config.delete("debug_log")
     @config = config
     @connection = Faraday::Connection.new(:url => config["uri"]) do |faraday|
-      faraday.use AppnexusApi::Faraday::Request::JsonEncode
+      faraday.request :json
       faraday.use AppnexusApi::Faraday::Response::RaiseHttpError
       faraday.use AppnexusApi::Faraday::Response::ParseJson
 
