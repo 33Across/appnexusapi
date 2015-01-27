@@ -2,14 +2,11 @@ module AppnexusApi
   module Faraday
     module Response
       class ParseJson < ::Faraday::Middleware
-        dependency 'multi_json'
 
-        def call(env)
-          @app.call(env).on_complete do |response_env|
-            if response_env[:response_headers]["content-type"].include?("application/json")
-              response_env[:body] = convert_to_json(response_env[:body])["response"]
-              check_for_error(response_env)
-            end
+        def call(request_env)
+          @app.call(request_env).on_complete do |response_env|
+            response_env[:body] = (response_env[:body])["response"]
+            check_for_error(response_env)
           end
         end
 

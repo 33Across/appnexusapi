@@ -13,6 +13,7 @@ class AppnexusApi::Connection
       faraday.request :json
       faraday.use AppnexusApi::Faraday::Response::RaiseHttpError
       faraday.use AppnexusApi::Faraday::Response::ParseJson
+      faraday.response :json, :content_type => /\bjson$/
 
       if debug_log
         faraday.use AppnexusApi::Faraday::Request::Logger
