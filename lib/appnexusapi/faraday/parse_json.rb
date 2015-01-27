@@ -1,7 +1,7 @@
 module AppnexusApi
   module Faraday
     module Response
-      class ParseJson < ::Faraday::Middleware
+      class ParseJsonBody < ::Faraday::Middleware
 
         def call(request_env)
           @app.call(request_env).on_complete do |response_env|
