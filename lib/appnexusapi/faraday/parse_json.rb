@@ -5,10 +5,10 @@ module AppnexusApi
         dependency 'multi_json'
 
         def call(env)
-          @app.call(env).on_complete do
-            if env[:response_headers]["content-type"].include?("application/json")
-              env[:body] = convert_to_json(env[:body])["response"]
-              check_for_error(env)
+          @app.call(env).on_complete do |response_env|
+            if response_env[:response_headers]["content-type"].include?("application/json")
+              response_env[:body] = convert_to_json(response_env[:body])["response"]
+              check_for_error(response_env)
             end
           end
         end
