@@ -8,6 +8,7 @@ class AppnexusApi::Resource
   def update(route_params={}, body_params={})
     resource = @service.update(id, route_params, body_params)
     @json = resource.raw_json
+    self
   end
 
   def delete(route_params={})
