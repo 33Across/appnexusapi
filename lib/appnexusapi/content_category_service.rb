@@ -5,12 +5,16 @@ class AppnexusApi::ContentCategoryService < AppnexusApi::Service
     super(connection)
   end
 
+  def uri_name
+    "content-category"
+  end
+
   def plural_name
     "content-categories"
   end
 
-  def uri_suffix
-    "content-category"
+  def plural_uri_name
+    "content-categories"
   end
 
 
