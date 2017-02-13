@@ -7,20 +7,13 @@ class AppnexusApi::Service
 
   def name
     @name ||= begin
-      str = self.class.name.split("::").last.gsub("Service", "")
+      str = self.class.name.split('::').last.sub(/Service\z/, '')
       str.gsub(/(.)([A-Z])/, '\1_\2').downcase
     end
   end
 
   def plural_name
     name + 's'
-  end
-
-  def resource_class
-    @resource_class ||= begin
-      resource_name = name.capitalize.gsub(/(_(.))/) { |c| $2.upcase }
-      AppnexusApi.const_get(resource_name + "Resource")
-    end
   end
 
   def uri_name
@@ -35,20 +28,16 @@ class AppnexusApi::Service
     uri_name
   end
 
-  def get(params={})
-    return_response = params.delete(:return_response) || false
+  def get(params = {})
     params = {
       "num_elements" => DEFAULT_NUMBER_OF_ELEMENTS,
       "start_element" => 0
     }.merge(params)
-    response = @connection.get(uri_suffix, params).body['response']
-    if return_response
-      response
-    else
-      parse_response(response)
-    end
+
+    parse_response(@connection.get(uri_suffix, params).body['response'])
   end
 
+  # Page through all available elements automatically
   def get_all(params = {})
     responses = []
     last_responses = get(params)
@@ -63,6 +52,7 @@ class AppnexusApi::Service
 
   def create(route_params={}, body={})
     raise(AppnexusApi::NotImplemented, "Service is read-only.") if @read_only
+
     body = { uri_name => body }
     route = @connection.build_url(uri_suffix, route_params)
     response = @connection.post(route, body).body['response']
@@ -75,6 +65,7 @@ class AppnexusApi::Service
 
   def update(id, route_params={}, body={})
     raise(AppnexusApi::NotImplemented, "Service is read-only.") if @read_only
+
     body = { uri_name => body }
     route = @connection.build_url(uri_suffix, route_params.merge("id" => id))
     response = @connection.put(route, body).body['response']
@@ -87,6 +78,7 @@ class AppnexusApi::Service
 
   def delete(id, route_params)
     raise(AppnexusApi::NotImplemented, "Service is read-only.") if @read_only
+
     route = @connection.build_url(uri_suffix, route_params.merge("id" => id))
     response = @connection.delete(route).body['response']
     if response['error_id']
@@ -96,19 +88,20 @@ class AppnexusApi::Service
     response
   end
 
+  private
+
   def parse_response(response)
     case key = resource_name(response)
     when plural_name, plural_uri_name
       response[key].map do |json|
-        resource_class.new(json, self, response['dbg'])
+        AppnexusApi::Resource.new(json, self, response['dbg'])
       end
     when name, uri_name
-      [resource_class.new(response[key], self, response['dbg'])]
+      [AppnexusApi::Resource.new(response[key], self, response['dbg'])]
     end
   end
 
   def resource_name(response)
     [plural_name, plural_uri_name, name, uri_name].detect { |n| response.key?(n) }
   end
-
 end

@@ -1,32 +1,20 @@
 require 'spec_helper'
 
-describe "AppNexus Publisher" do
-  before(:all) do
-    @connection = connection
-    @publisher_service = AppnexusApi::PublisherService.new(@connection)
-  end
+describe AppnexusApi::PublisherService do
+  include_context 'with a publisher'
 
-  it "publisher life cycle" do
-    code = "spec_code_#{Time.now.to_i}_#{rand(9_000_000)}"
-    new_publisher_params = {
-      name: "Publisher Name",
-      code: code,
-      expose_domains: true,
-      reselling_exposure: "public",
-      ad_quality_advanced_mode_enabled: true
-    }
+  it "cruds" do
+    VCR.use_cassette('publisher_crud') do
+      expect(publisher.name).to eq 'spec publisher'
+      expect(publisher.expose_domains).to be true
+      expect(publisher.reselling_exposure).to eq "public"
+      expect(publisher.ad_quality_advanced_mode_enabled).to be true
 
-    publisher = @publisher_service.create({}, new_publisher_params)
-    expect(publisher.name).to eq "Publisher Name"
-    expect(publisher.code).to eq code
-    expect(publisher.expose_domains).to be true
-    expect(publisher.reselling_exposure).to eq "public"
-    expect(publisher.ad_quality_advanced_mode_enabled).to be true
+      expect { publisher_service.get("id" => publisher.id) }.to_not raise_error
 
-    expect { @publisher_service.get("id" => publisher.id) }.to_not raise_error
+      publisher.delete
 
-    publisher.delete
-
-    expect(@publisher_service.get("id" => publisher.id)).to be_nil
+      expect(publisher_service.get("id" => publisher.id)).to be_nil
+    end
   end
 end
